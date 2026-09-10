@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>카페 발행 관리</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark">V</span><span>카페매니저</span></div>
+    <div class="profile"><span class="avatar">김</span><div><strong>김태한님</strong><small>콘텐츠 관리자</small></div></div>
+    <nav>
+      <a class="active" href="#dashboard">대시보드</a>
+      <a href="#drafts">노션 원고</a>
+      <a href="#publish">카페 발행</a>
+      <a href="#analytics">성과 기록</a>
+      <a href="#settings">설정</a>
+    </nav>
+    <div class="sidebar-bottom"><span class="status-dot"></span> 연결된 카페 1개</div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div><p class="eyebrow">CONTENT WORKSPACE</p><h1>카페 발행 관리</h1></div>
+      <button class="outline-button" id="connectNotion">Notion 연결</button>
+    </header>
+
+    <section class="simple-wizard">
+      <div class="step-indicator"><span class="current">1</span><i></i><span>2</span><i></i><span>3</span></div>
+      <p class="eyebrow">STEP <span id="stepNumber">1</span> OF 3</p>
+      <h2 id="wizardTitle">발행할 원고를 선택하세요</h2>
+      <p class="wizard-help" id="wizardHelp">노션에서 불러온 원고 중 하나를 클릭하면 됩니다.</p>
+      <div class="wizard-content" id="wizardContent"></div>
+      <div class="wizard-actions">
+        <button class="outline-button" id="wizardBack" hidden>이전</button>
+        <button class="primary-button wizard-next" id="wizardNext" disabled>다음</button>
+      </div>
+    </section>
+
+    <section class="stats" id="dashboard">
+      <article class="stat-card"><span>작성 대기 원고</span><strong id="draftCount">12</strong><small>노션에서 불러온 원고</small></article>
+      <article class="stat-card"><span>이번 달 발행</span><strong>24</strong><small class="positive">지난달보다 18% 증가</small></article>
+      <article class="stat-card"><span>누적 조회수</span><strong>18,420</strong><small>기록된 게시글 기준</small></article>
+      <article class="stat-card"><span>평균 좋아요</span><strong>46</strong><small>게시글 1개 기준</small></article>
+    </section>
+
+    <section class="workspace-grid advanced-area">
+      <div class="panel drafts-panel" id="drafts">
+        <div class="panel-heading"><div><p class="eyebrow">NOTION DATABASE</p><h2>원고 목록</h2></div><div><button class="text-button" id="refreshDrafts">↻ 새로고침</button><button class="text-button" id="loadNotion">노션에서 불러오기</button></div></div>
+        <div class="filter-row"><input id="searchInput" type="search" placeholder="원고 제목 검색"><select id="statusFilter"><option value="all">전체 상태</option><option value="ready">발행 대기</option><option value="published">발행 완료</option></select></div>
+        <div class="draft-list" id="draftList"></div>
+      </div>
+
+      <div class="panel editor-panel" id="publish">
+        <div class="panel-heading"><div><p class="eyebrow">PUBLISH COMPOSER</p><h2>카페 글 작성</h2></div><span class="save-state" id="saveState">자동 저장됨</span></div>
+        <label for="titleInput">제목</label>
+        <input id="titleInput" class="title-input" placeholder="제목을 입력하세요">
+        <label for="bodyInput">본문</label>
+        <textarea id="bodyInput" placeholder="노션에서 원고를 선택하면 본문이 표시됩니다."></textarea>
+        <div class="publish-options">
+          <label>작성 방식<select id="writeMode"><option>SE-ONE 글쓰기</option></select></label>
+          <label>게시판<select id="boardSelect"><option>자유수다</option><option>오늘 산 거 자랑</option><option>내돈내산 후기</option></select></label>
+        </div>
+        <fieldset class="target-box"><legend>발행 카페</legend>
+          <label class="check-label"><input type="checkbox" name="cafe" value="써본언니들" checked> 써본언니들</label>
+          <label class="check-label"><input type="checkbox" name="cafe" value="천안아산 동네사람들" checked> 천안아산 동네사람들</label>
+        </fieldset>
+        <label for="nicknameInput">사용할 별명 순서</label>
+        <input id="nicknameInput" class="title-input" value="별명1, 별명2, 별명3" placeholder="예: 별명1, 별명2, 별명3">
+        <p class="helper left">쉼표로 구분하면 위에서부터 순서대로 선택됩니다.</p>
+        <div class="button-row">
+          <button class="secondary-button" id="sendToV2r">V2R로 보내기</button>
+          <button class="primary-button" id="publishButton">카페에 발행하기</button>
+        </div>
+        <p class="helper">내가 운영하거나 글쓰기 권한이 있는 카페에서만 사용하세요.</p>
+        <p class="integration-note">V2R 로그인 후 발행 화면에서 붙여넣어 등록할 수 있습니다.</p>
+      </div>
+    </section>
+
+    <section class="panel analytics-panel" id="analytics">
+      <div class="panel-heading"><div><p class="eyebrow">PERFORMANCE LOG</p><h2>발행 성과 기록</h2></div><button class="text-button" id="addRecord">+ 직접 기록</button></div>
+      <div class="table-wrap"><table><thead><tr><th>게시글</th><th>발행일</th><th>조회수</th><th>좋아요</th><th>댓글</th><th>대댓글</th><th>상태</th></tr></thead><tbody id="analyticsTable"></tbody></table></div>
+    </section>
+  </main>
+  <div class="toast" id="toast"></div>
+  <dialog id="notionDialog">
+    <form method="dialog" class="notion-form">
+      <div class="panel-heading"><div><p class="eyebrow">NOTION API</p><h2>노션 연결 설정</h2></div><button class="close-button" value="cancel">×</button></div>
+      <p class="dialog-help">노션 개발자 도구에서 만든 액세스 토큰을 입력하세요. 토큰은 이 컴퓨터의 브라우저에만 저장됩니다.</p>
+      <label for="notionToken">액세스 토큰</label>
+      <input id="notionToken" type="password" placeholder="secret_ 또는 ntn_ 으로 시작하는 토큰">
+      <label for="notionPageId">데이터베이스 페이지 주소 또는 ID</label>
+      <input id="notionPageId" value="3a3fac64665c8145894fe12366c8c5b4" placeholder="노션 주소 또는 ID">
+      <div class="dialog-actions"><button class="outline-button" value="cancel">취소</button><button class="primary-button" id="saveNotion" value="default">저장하고 연결</button></div>
+    </form>
+  </dialog>
+  <script src="app.js"></script>
+</body>
+</html>
