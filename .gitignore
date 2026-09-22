@@ -1,2 +1,5 @@
 .env
 .env.local
+node_modules/
+cafe-storage/v2r-profile/
+cafe-storage/v2r-run.log

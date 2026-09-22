@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>카페 샘플 글 저장소</title>
+<style>
+  :root {
+    --bg: #f4f1ea;
+    --panel: #ffffff;
+    --ink: #262421;
+    --ink-soft: #6b665d;
+    --line: #e7e1d5;
+    --brand: #2f6f4f;
+    --brand-soft: #e3f0e8;
+    --accent: #b9722c;
+    --accent-soft: #f7ead9;
+    --blue: #35638f;
+    --blue-soft: #e2edf7;
+    --field: #faf8f3;
+    --shadow: 0 1px 2px rgba(50, 40, 20, .06), 0 6px 18px rgba(50, 40, 20, .05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1b19; --panel: #262522; --ink: #f1eee7; --ink-soft: #a8a297; --line: #3a3833;
+      --brand: #6fc294; --brand-soft: #22382c; --accent: #e0a460; --accent-soft: #3a2f22;
+      --blue: #8db8e6; --blue-soft: #22303f; --field: #1f1e1c; --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    font-size: 16px; line-height: 1.6;
+  }
+  button { font-family: inherit; }
+
+  /* 맨 위 */
+  .top { background: var(--panel); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+  .top-inner { max-width: 1040px; margin: 0 auto; padding: 14px 20px 0; }
+  .brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .brand h1 { margin: 0; font-size: 22px; letter-spacing: -.02em; }
+  .brand p { margin: 0; color: var(--ink-soft); font-size: 14px; }
+  .main-tabs { display: flex; gap: 4px; margin-top: 10px; }
+  .main-tabs button {
+    border: none; background: none; cursor: pointer; padding: 10px 22px 12px;
+    font-size: 17px; font-weight: 700; color: var(--ink-soft);
+    border-bottom: 3px solid transparent;
+  }
+  .main-tabs button.active { color: var(--brand); border-bottom-color: var(--brand); }
+
+  main { max-width: 1040px; margin: 0 auto; padding: 22px 20px 80px; }
+  [hidden] { display: none !important; }
+
+  /* 오늘 진행 카드 */
+  .section-title { display: flex; align-items: baseline; justify-content: space-between; margin: 0 0 12px; }
+  .section-title h2 { margin: 0; font-size: 17px; }
+  .section-title span { color: var(--ink-soft); font-size: 13px; }
+  .progress-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+  .pcard {
+    text-align: left; background: var(--panel); border: 2px solid transparent; border-radius: 18px;
+    padding: 16px 18px 18px; box-shadow: var(--shadow); cursor: pointer; color: inherit;
+  }
+  .pcard:hover { border-color: var(--line); }
+  .pcard.active { border-color: var(--brand); background: var(--brand-soft); }
+  .pcard .name { font-size: 15px; font-weight: 700; color: var(--ink-soft); }
+  .pcard .big { margin: 6px 0 2px; font-size: 34px; font-weight: 800; letter-spacing: -.03em; }
+  .pcard .big small { font-size: 16px; font-weight: 600; color: var(--ink-soft); margin-left: 4px; }
+  .bar { height: 10px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 8px 0 10px; }
+  .bar > i { display: block; height: 100%; background: var(--brand); border-radius: 99px; transition: width .4s; }
+  .pcard .meta { display: flex; justify-content: space-between; font-size: 14px; color: var(--ink-soft); }
+  .pcard .meta b { color: var(--ink); }
+
+  .goalbox { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); flex-wrap: wrap; }
+  .goalbox label { font-size: 14px; font-weight: 700; color: var(--ink-soft); display: flex; align-items: center; gap: 6px; }
+  .goal-input {
+    width: 76px; padding: 7px 8px; font-size: 17px; font-weight: 700; text-align: center;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--field); color: var(--ink);
+  }
+  .goal-input:focus { outline: 2px solid var(--brand); }
+  .save-goal {
+    border: none; background: var(--brand); color: #fff; font-weight: 700; font-size: 14px;
+    padding: 8px 14px; border-radius: 10px; cursor: pointer; margin-left: auto;
+  }
+  .save-goal.done { background: var(--ink); }
+  .lowstock { display: inline-block; margin-top: 8px; padding: 4px 10px; border-radius: 99px; background: #fde8e6; color: #b3261e; font-size: 13px; font-weight: 700; }
+  @media (prefers-color-scheme: dark) { .lowstock { background: #4a2320; color: #ffb4ab; } }
+  .pace { font-size: 13px; color: var(--ink-soft); margin-top: 6px; }
+  .pcard { cursor: pointer; }
+
+  /* 보기 / 게시판 선택 */
+  .controls { margin: 26px 0 8px; display: flex; flex-direction: column; gap: 12px; }
+  .seg { display: inline-flex; background: var(--line); border-radius: 12px; padding: 4px; align-self: flex-start; }
+  .seg button {
+    border: none; background: none; padding: 9px 18px; border-radius: 9px; cursor: pointer;
+    font-size: 15px; font-weight: 700; color: var(--ink-soft);
+  }
+  .seg button.active { background: var(--panel); color: var(--ink); box-shadow: var(--shadow); }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chips button {
+    border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft);
+    border-radius: 99px; padding: 7px 15px; font-size: 14.5px; cursor: pointer;
+  }
+  .chips button.active { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+  .count-note { color: var(--ink-soft); font-size: 14px; margin: 6px 2px 0; }
+
+  /* 글 카드 */
+  .grid { display: grid; gap: 16px; margin-top: 14px; }
+  .card { background: var(--panel); border-radius: 18px; padding: 20px 22px; box-shadow: var(--shadow); }
+  .card.pending { opacity: .55; }
+  .card-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tag { font-size: 13px; font-weight: 700; padding: 4px 11px; border-radius: 99px; }
+  .tag.cafe { background: var(--blue-soft); color: var(--blue); }
+  .tag.board { background: var(--accent-soft); color: var(--accent); }
+  .card-head .date { margin-left: auto; font-size: 13px; color: var(--ink-soft); }
+  .field { margin-bottom: 12px; }
+  .field-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+  .label { font-size: 13px; font-weight: 700; color: var(--ink-soft); }
+  .body-box {
+    background: var(--field); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px; font-size: 16px; line-height: 1.75; white-space: pre-wrap; word-break: break-word;
+  }
+  .body-box.title { font-size: 18px; font-weight: 700; }
+  .copy {
+    border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer;
+    border-radius: 10px; padding: 6px 14px; font-size: 14px; font-weight: 700; white-space: nowrap;
+  }
+  .copy:hover { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+  .copy.done { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .comments { border-top: 1px dashed var(--line); margin-top: 16px; padding-top: 14px; display: grid; gap: 12px; }
+  .cpair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .cpair.single { grid-template-columns: 1fr; }
+  .cpair .field { margin: 0; }
+  .card-foot { display: flex; align-items: center; gap: 12px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .use { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 15px; font-weight: 600; margin-right: auto; }
+  .use input { width: 24px; height: 24px; cursor: pointer; accent-color: var(--brand); }
+  .note { margin-right: auto; font-size: 14px; color: var(--accent); font-weight: 600; }
+  .used-note { margin-right: auto; font-size: 14px; color: var(--ink-soft); }
+  .copy.all { background: var(--brand); border-color: var(--brand); color: #fff; padding: 9px 20px; font-size: 15px; }
+  .copy.all.done { background: var(--ink); border-color: var(--ink); }
+
+  .empty, .blog-empty {
+    text-align: center; color: var(--ink-soft); padding: 70px 20px; background: var(--panel);
+    border-radius: 18px; box-shadow: var(--shadow);
+  }
+  .blog-empty h2 { margin: 0 0 8px; color: var(--ink); }
+  .blog-empty .icon { font-size: 44px; }
+
+  @media (max-width: 640px) {
+    .cpair { grid-template-columns: 1fr; }
+    .card { padding: 16px; }
+    .main-tabs button { padding: 10px 16px 12px; }
+  }
+</style>
+</head>
+<body>
+  <header class="top">
+    <div class="top-inner">
+      <div class="brand">
+        <h1>원고 저장소</h1>
+        <p>제목·본문·댓글을 따로 복사해서 자기 얘기로 바꿔 쓰세요</p>
+      </div>
+      <nav class="main-tabs" id="mainTabs"></nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- 카페 -->
+    <section id="cafeView">
+      <div class="section-title"><h2>오늘 진행 상황</h2><span id="updated"></span></div>
+      <div class="progress-grid" id="progress"></div>
+
+      <div class="controls">
+        <div class="seg" id="viewTabs"></div>
+        <div class="chips" id="chips"></div>
+      </div>
+      <div class="count-note" id="countNote"></div>
+      <div class="grid" id="grid"></div>
+    </section>
+
+    <!-- 블로그 (준비 중) -->
+    <section id="blogView" hidden>
+      <div class="blog-empty">
+        <div class="icon">✍️</div>
+        <h2>블로그 원고는 준비 중이에요</h2>
+        <p>카페 원고와 같은 방식으로, 나중에 이곳에 블로그 글이 채워져요.</p>
+      </div>
+    </section>
+  </main>
+
+<script>
+const DAILY_GOAL = 50;              // 목표를 따로 저장하지 않았을 때의 기본값
+const LOW_STOCK = 100;              // 안 쓴 원고가 이 개수 이하가 되면 '원고 보충 필요' 표시
+const WINDOW_MIN = 990;             // 등록 시간 07:00~23:30 = 990분
+const PENDING_KEY = 'cafePendingUse';
+const USE_DELAY_MS = 60 * 1000;
+
+let samples = [];
+let mainTab = 'cafe';               // 'cafe' | 'blog'
+let activeCafe = '전체';
+let activeCategory = '전체';
+let currentView = 'active';         // 'active' | 'used'
+let copyTargets = [];
+let goals = {};                     // 카페별 오늘 목표 (서버에 저장됨)
+
+/* ---------- 저장/불러오기 ---------- */
+function getPending() {
+  try { return JSON.parse(localStorage.getItem(PENDING_KEY) || '{}'); } catch { return {}; }
+}
+function setPending(obj) { localStorage.setItem(PENDING_KEY, JSON.stringify(obj)); }
+
+async function fetchSamples() {
+  const res = await fetch('/api/samples');
+  samples = await res.json();
+  try { goals = (await (await fetch('/api/settings')).json()).goals || {}; } catch {}
+}
+const goalOf = (cafe) => (Number.isFinite(Number(goals[cafe])) && goals[cafe] !== undefined) ? Number(goals[cafe]) : DAILY_GOAL;
+
+async function saveGoal(cafe, value) {
+  const n = Math.max(0, Math.min(500, Math.floor(Number(value))));
+  const res = await fetch('/api/settings', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ goals: { [cafe]: n } })
+  });
+  if (!res.ok) throw new Error('저장 실패');
+  goals = (await res.json()).goals || {};
+}
+
+async function load() {
+  await fetchSamples();
+  resumePendingTimers();
+  renderAll();
+  // 30초마다 숫자(오늘 진행 상황)만 새로 고침 — 복사 중인 글 목록은 건드리지 않음
+  setInterval(async () => {
+    try {
+      await fetchSamples();
+      if (!(document.activeElement && document.activeElement.classList.contains('goal-input'))) renderProgress();
+      renderViewTabs(); renderNote();
+    } catch {}
+  }, 30000);
+}
+
+function resumePendingTimers() {
+  const pending = getPending();
+  Object.entries(pending).forEach(([id, checkedAt]) => {
+    const elapsed = Date.now() - checkedAt;
+    const sample = samples.find(s => s.id === Number(id));
+    if (!sample || sample.used) { delete pending[id]; return; }
+    if (elapsed >= USE_DELAY_MS) { markUsed(Number(id)); delete pending[id]; }
+    else setTimeout(() => markUsed(Number(id)), USE_DELAY_MS - elapsed);
+  });
+  setPending(pending);
+}
+
+async function markUsed(id) {
+  await fetch(`/api/samples/${id}`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ used: true })
+  });
+  const pending = getPending(); delete pending[id]; setPending(pending);
+  const sample = samples.find(s => s.id === id);
+  if (sample) { sample.used = true; sample.usedAt = new Date().toISOString(); }
+  renderAll();
+}
+
+/* ---------- 계산 ---------- */
+const escapeHtml = (str) => { const d = document.createElement('div'); d.textContent = str == null ? '' : str; return d.innerHTML; };
+const isToday = (iso) => !!iso && new Date(iso).toDateString() === new Date().toDateString();
+const cafeNames = () => [...new Set(samples.map(s => s.cafe).filter(Boolean))];
+const inCafe = (s) => activeCafe === '전체' || s.cafe === activeCafe;
+
+function stats(cafe) {
+  const list = samples.filter(s => cafe === '전체' || s.cafe === cafe);
+  return {
+    today: list.filter(s => s.used && isToday(s.usedAt)).length,
+    left: list.filter(s => !s.used).length,
+    total: list.length
+  };
+}
+
+/* ---------- 그리기 ---------- */
+function renderAll() { renderMainTabs(); renderProgress(); renderViewTabs(); renderChips(); renderNote(); renderGrid(); showMain(); }
+
+function showMain() {
+  document.getElementById('cafeView').hidden = mainTab !== 'cafe';
+  document.getElementById('blogView').hidden = mainTab !== 'blog';
+}
+
+function renderMainTabs() {
+  document.getElementById('mainTabs').innerHTML = [['cafe', '카페'], ['blog', '블로그']]
+    .map(([k, n]) => `<button data-main="${k}" class="${mainTab === k ? 'active' : ''}">${n}</button>`).join('');
+}
+
+function renderProgress() {
+  const names = cafeNames();
+  const cards = ['전체', ...names].map(c => {
+    const st = stats(c);
+    const isAll = c === '전체';
+    const goal = isAll ? names.reduce((a, n) => a + goalOf(n), 0) : goalOf(c);
+    const pct = goal ? Math.min(100, Math.round(st.today / goal * 100)) : 0;
+    const pace = isAll ? '' : (goal > 0 ? `약 ${Math.round(WINDOW_MIN / goal)}분마다 1개씩 올려요` : '오늘은 올리지 않아요');
+    const box = isAll ? '' : `
+        <div class="goalbox">
+          <label>오늘 목표 <input class="goal-input" type="number" min="0" max="500" value="${goal}" data-goal="${escapeHtml(c)}"> 개</label>
+          <button class="save-goal" data-save="${escapeHtml(c)}">저장</button>
+        </div>
+        <div class="pace">${pace}</div>`;
+    return `
+      <div class="pcard ${activeCafe === c ? 'active' : ''}" data-cafe="${escapeHtml(c)}">
+        <div class="name">${isAll ? '모든 카페' : escapeHtml(c)}</div>
+        <div class="big">${st.today}<small>개 등록 (목표 ${goal}개)</small></div>
+        <div class="bar"><i style="width:${pct}%"></i></div>
+        <div class="meta"><span>남은 원고 <b>${st.left}개</b></span><span>${pct}%</span></div>
+        ${(!isAll && st.left <= LOW_STOCK) ? `<div class="lowstock">⚠ 원고 보충 필요 (남은 ${st.left}개)</div>` : ''}
+        ${box}
+      </div>`;
+  }).join('');
+  document.getElementById('progress').innerHTML = cards;
+  const now = new Date();
+  document.getElementById('updated').textContent = `${now.getHours()}시 ${String(now.getMinutes()).padStart(2, '0')}분 기준`;
+}
+
+function renderViewTabs() {
+  const list = samples.filter(inCafe);
+  const active = list.filter(s => !s.used).length;
+  const used = list.filter(s => s.used).length;
+  document.getElementById('viewTabs').innerHTML = `
+    <button data-view="active" class="${currentView === 'active' ? 'active' : ''}">아직 안 쓴 글 (${active})</button>
+    <button data-view="used" class="${currentView === 'used' ? 'active' : ''}">사용된 글 (${used})</button>`;
+}
+
+function renderChips() {
+  const base = samples.filter(inCafe).filter(s => currentView === 'used' ? s.used : !s.used);
+  const cats = ['전체', ...new Set(base.map(s => s.category))];
+  if (!cats.includes(activeCategory)) activeCategory = '전체';
+  document.getElementById('chips').innerHTML = cats.map(c => {
+    const n = c === '전체' ? base.length : base.filter(s => s.category === c).length;
+    return `<button data-cat="${escapeHtml(c)}" class="${c === activeCategory ? 'active' : ''}">${escapeHtml(c)} ${n}</button>`;
+  }).join('');
+}
+
+function currentList() {
+  let list = samples.filter(inCafe).filter(s => currentView === 'used' ? !!s.used : !s.used);
+  if (activeCategory !== '전체') list = list.filter(s => s.category === activeCategory);
+  return list;
+}
+
+function renderNote() {
+  const n = currentList().length;
+  const where = activeCafe === '전체' ? '모든 카페' : activeCafe;
+  document.getElementById('countNote').textContent = `${where} · ${activeCategory === '전체' ? '전체 게시판' : activeCategory} · ${n}개`;
+}
+
+function addCopyable(text) { copyTargets.push(text); return copyTargets.length - 1; }
+
+function field(label, text, cls = '') {
+  const i = addCopyable(text);
+  return `
+    <div class="field">
+      <div class="field-head"><span class="label">${label}</span><button class="copy" data-copy="${i}">복사</button></div>
+      <div class="body-box ${cls}">${escapeHtml(text)}</div>
+    </div>`;
+}
+
+function renderGrid() {
+  copyTargets = [];
+  const pending = getPending();
+  const list = currentList();
+  const grid = document.getElementById('grid');
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty">${currentView === 'used' ? '아직 사용된 글이 없어요' : '보여드릴 글이 없어요'}</div>`;
+    return;
+  }
+  grid.innerHTML = list.slice().reverse().map(s => {
+    const isPending = !!pending[s.id];
+    const comments = (s.comments || []).filter(c => c && c.comment);
+    const commentsHtml = comments.length ? `<div class="comments">${comments.map((c, i) => `
+      <div class="cpair ${c.reply ? '' : 'single'}">
+        ${field(`댓글${i + 1}`, c.comment)}
+        ${c.reply ? field(`대댓글${i + 1}`, c.reply) : ''}
+      </div>`).join('')}</div>` : '';
+    const all = [s.title, '', s.body, ...(comments.length ? [''] : []),
+      ...comments.flatMap((c, i) => [`댓글${i + 1}: ${c.comment}`, ...(c.reply ? [`대댓글${i + 1}: ${c.reply}`] : [])])].join('\n');
+    const allIdx = addCopyable(all);
+    const foot = currentView === 'used'
+      ? `<span class="used-note">사용됨${s.usedAt ? ' · ' + new Date(s.usedAt).toLocaleString('ko-KR') : ''}</span>`
+      : isPending
+        ? `<span class="note">1분 뒤 "사용된 글"로 이동해요</span>`
+        : `<label class="use"><input type="checkbox" class="use-check" data-id="${s.id}"> 사용했어요</label>`;
+    return `
+      <article class="card ${isPending ? 'pending' : ''}">
+        <div class="card-head">
+          ${s.cafe ? `<span class="tag cafe">${escapeHtml(s.cafe)}</span>` : ''}
+          <span class="tag board">${escapeHtml(s.category)}</span>
+          <span class="date">${escapeHtml(s.createdAt)}</span>
+        </div>
+        ${field('제목', s.title, 'title')}
+        ${field('본문', s.body)}
+        ${commentsHtml}
+        <div class="card-foot">
+          ${foot}
+          <button class="copy all" data-copy="${allIdx}">전체 복사</button>
+        </div>
+      </article>`;
+  }).join('');
+}
+
+/* ---------- 클릭 처리 (한 곳에서 모아서) ---------- */
+document.addEventListener('click', async (e) => {
+  const save = e.target.closest('button.save-goal');
+  if (save) {
+    const cafe = save.dataset.save;
+    const input = document.querySelector(`.goal-input[data-goal="${CSS.escape(cafe)}"]`);
+    try {
+      await saveGoal(cafe, input.value);
+      save.textContent = '저장됨!'; save.classList.add('done');
+      setTimeout(() => { renderProgress(); }, 900);
+    } catch { save.textContent = '실패'; }
+    return;
+  }
+  if (e.target.closest('.goalbox')) return;
+  const card = e.target.closest('.pcard');
+  if (card) { activeCafe = card.dataset.cafe; activeCategory = '전체'; renderAll(); return; }
+  const t = e.target.closest('button, input.use-check');
+  if (!t) return;
+  if (t.dataset.main) { mainTab = t.dataset.main; renderMainTabs(); showMain(); return; }
+  if (t.dataset.view) { currentView = t.dataset.view; activeCategory = '전체'; renderViewTabs(); renderChips(); renderNote(); renderGrid(); return; }
+  if (t.dataset.cat !== undefined) { activeCategory = t.dataset.cat; renderChips(); renderNote(); renderGrid(); return; }
+  if (t.dataset.copy !== undefined) {
+    navigator.clipboard.writeText(copyTargets[Number(t.dataset.copy)]);
+    const old = t.textContent; t.textContent = '복사됨!'; t.classList.add('done');
+    setTimeout(() => { t.textContent = old; t.classList.remove('done'); }, 1200);
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.target.classList && e.target.classList.contains('goal-input')) {
+    const b = document.querySelector(`.save-goal[data-save="${CSS.escape(e.target.dataset.goal)}"]`);
+    if (b) b.click();
+  }
+});
+document.addEventListener('change', (e) => {
+  const cb = e.target.closest('input.use-check');
+  if (!cb || !cb.checked) return;
+  const id = Number(cb.dataset.id);
+  const pending = getPending(); pending[id] = Date.now(); setPending(pending);
+  setTimeout(() => markUsed(id), USE_DELAY_MS);
+  renderGrid();
+});
+
+load();
+</script>
+</body>
+</html>
