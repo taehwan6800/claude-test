@@ -68,6 +68,12 @@ description: 카페 원고 저장소와 v2r.daboja.im 자동 글 등록을 운�
 - 클라우드 예약 작업은 로컬 컴퓨터가 아니라 깃허브(`github.com/taehwan6800/claude-test`)를 새로 내려받아 실행한다. 그래서 `cafe-storage/`, `scripts/`, `cafe-web/`, `cafe-server.js`, `package.json`을 깃에 커밋해 두어야 한다(2026-09-22 최초 커밋 완료). **단 `cafe-storage/v2r-profile`(로그인된 크롬 프로필, 실제 비밀번호·쿠키 포함)과 `cafe-storage/v2r-run.log`는 `.gitignore`에 등록되어 있으니 절대 커밋하지 않는다.**
 - 아침에 대화를 시작하면, 전날 밤 예약 작업이 잘 돌았는지(원고 5개가 새로 저장되고 push됐는지) `git log`나 `cafe-storage/samples.json` 최근 항목으로 확인하고, 실패했으면 원인을 살펴 사용자에게 보고한다.
 
+## 2-4. 예약 작업 점검 방법 (원고가 안 늘어날 때)
+
+- **알려진 고장 유형(2026-09-24·25에 실제 발생)**: 원고 작성 자체는 성공했는데 마지막 `git push`가 "Claude가 이 저장소에 대한 GitHub 접근 권한이 없다"(403, GitHub App 연결 끊김)로 실패하는 경우가 있다. 이때 예약 작업은 사용자 휴대폰으로 알림(PushNotification)을 보내지만 놓치기 쉽다 — 조용히 며칠간 반복 실패할 수 있으니 원고 수가 이상하게 안 줄어들거나 늘지 않으면 먼저 이걸 의심한다.
+- 점검 순서: `RemoteTrigger`(먼저 `ToolSearch select:RemoteTrigger`로 로드) `action: "list_runs"`, `trigger_id: "trig_01Xs8NXEFyFT7mdhoYUQ8CwN"`로 최근 실행 목록을 보고, 각 세션에 `action: "get_run_log"`로 실제 push까지 성공했는지 로그 끝부분(`git push` 결과)을 확인한다. 실행 기록 자체가 없는 날은 예약이 아예 안 돈 것이다.
+- push가 403으로 막혀 있으면: 사용자에게 `https://claude.ai/connect-github`에서 GitHub 재연결을 안내한다(조직 계정이면 관리자가 `https://github.com/apps/claude/installations/select_target`에서 앱 설치가 필요할 수도 있음). 재연결 후 `RemoteTrigger action: "run"`으로 한 번 수동 실행해 push까지 되는지 확인하고, 실패했던 날짜의 노션 내용은 그날 표를 다시 열어 수동으로 원고화해 보충한다(이미 2026-09-24·25분은 반영 완료).
+
 ## 3. 목표 개수 설정
 
 - 웹페이지 카페 카드의 "오늘 목표" 칸에서 카페별로 바꾸고 저장한다(1분 안에 프로그램에 반영). 파일은 `cafe-storage/v2r-settings.json`.
